@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:h2:tcp://localhost/./jpashop # MVCC=TRUE 옵션을 주면 여러곳에서 접근했을때 좀더 빠르다. 개발시엔 크게 상관이없음
+    username: jpashop
+    password: jpa
+    driver-class-name: org.h2.Driver # H2 JDBC
+
+  jpa:
+    hibernate:
+      ddl-auto: create # DDL CREATE MODE, 애플리케이션 실행시 지우고 새롭게 생성한다.
+    properties:
+      hibernate:
+#        show_sql: true # SQL show (System.out 사용 사용하지 말것)
+        format_sql: true # SQL formatting
+    database-platform: org.hibernate.dialect.H2Dialect
+
+logging:
+  level:
+    org.hibernate.SQL: debug # Hibernate Logging LEVEL 설정, Hibernate SQL이 모두 보이게 된다. (Logger 사용)
+    org.hiberate.type: trace
