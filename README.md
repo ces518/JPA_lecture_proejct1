@@ -8,3 +8,4 @@
 - Lombok
 - Gradle
 - JDK 1.8
+- Thymeleaf
