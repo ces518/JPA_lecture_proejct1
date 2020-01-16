@@ -38,7 +38,7 @@ public class Category {
 
     // 계층형 구조의 부모 매핑
     // 다대일 양방향 매핑
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private Category parent;
 
@@ -46,4 +46,10 @@ public class Category {
     // 일대다 양방향 매핑
     @OneToMany(mappedBy = "parent")
     private List<Category> children = new ArrayList<>();
+
+    /* 연관관계 편의 메소드 */
+    public void addChildren (Category child) {
+        this.children.add(child);
+        child.setParent(this);
+    }
 }
