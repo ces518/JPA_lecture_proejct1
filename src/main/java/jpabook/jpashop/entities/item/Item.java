@@ -1,6 +1,7 @@
 package jpabook.jpashop.entities.item;
 
 import jpabook.jpashop.entities.Category;
+import jpabook.jpashop.exception.NotEnoughException;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -32,4 +33,32 @@ public abstract class Item {
 
     @ManyToMany(mappedBy = "items")
     private List<Category> categories = new ArrayList<>();
+
+    /**
+     * 도메인주도 설계시
+     * 엔티티가 해결할 수 있는 비즈니스 로직은 엔티티가 가지고 있는것이 좋다.
+     * 데이터가 가지고 있는쪽에서 비즈니스 로직을 두는것이 좋음
+     * 객체지향적인 설계
+     * 응집도 증가
+     */
+
+    /**
+     * 재고 증가
+     * @param quantity
+     */
+    public void addStock (int quantity) {
+        this.stockQuantity += quantity;
+    }
+
+    /**
+     * 재고 감소
+     * @param quantity
+     */
+    public void removeStock (int quantity) {
+        int resultStock = this.stockQuantity - quantity;
+        if (resultStock < 0) {
+            throw new NotEnoughException("need more stock");
+        }
+        this.stockQuantity = resultStock;
+    }
 }
