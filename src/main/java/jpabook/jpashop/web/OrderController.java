@@ -1,16 +1,16 @@
 package jpabook.jpashop.web;
 
 import jpabook.jpashop.entities.Member;
+import jpabook.jpashop.entities.Order;
 import jpabook.jpashop.entities.item.Item;
+import jpabook.jpashop.repositories.OrderSearch;
 import jpabook.jpashop.service.ItemService;
 import jpabook.jpashop.service.MemberService;
 import jpabook.jpashop.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -52,6 +52,23 @@ public class OrderController {
         // 트랜잭션에 있는 서비스 계층의 비즈니스로직에서 사용될때 누릴수 있는 혜택이 많음
         orderService.order(memberId, itemId, count);
 
+        return "redirect:/orders";
+    }
+
+    @GetMapping("/orders")
+    public String orderList (@ModelAttribute OrderSearch orderSearch, Model model) {
+
+        // 단순하게 화면에서 조회하는 기능이라면
+        // 서비스 계층을 사용하는것보다 리포지토리에서 바로 호출하는것도 나쁘지 않다.
+        List<Order> orders = orderService.findOrders(orderSearch);
+        model.addAttribute("orders", orders);
+
+        return "order/orderList";
+    }
+
+    @PostMapping("/orders/{orderId}/cancel")
+    public String cancelOrder (@PathVariable Long orderId) {
+        orderService.cancelOrder(orderId);
         return "redirect:/orders";
     }
 }
