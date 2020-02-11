@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by IntelliJ IDEA.
@@ -21,6 +23,39 @@ import javax.validation.constraints.NotEmpty;
 public class MemberApiController {
 
     private final MemberService memberService;
+
+    @GetMapping("/api/v1/members")
+    public List<Member> membersV1 () {
+        return memberService.findMembers();
+    }
+
+    @GetMapping("/api/v2/members")
+    public Result memberV2 () {
+        List<Member> findMembers = memberService.findMembers();
+
+        /* DTO로 변환 */
+        List<MemberDto> memberDtos = findMembers.stream()
+                .map(findMember -> new MemberDto(findMember.getName()))
+                .collect(Collectors.toList());
+
+        // 껍데기 형태로 한번 감싸주어야한다.
+        // -> 유연성을 위함
+        return new Result(memberDtos.size(), memberDtos);
+    }
+
+    @Data
+    @AllArgsConstructor
+    static class Result<T> {
+        private int count;
+        private T data;
+    }
+
+    /* API 스펙에 추가할 것들만 Dto에 추가하면 된다.*/
+    @Data
+    @AllArgsConstructor
+    static class MemberDto {
+        private String name;
+    }
 
     @PostMapping("/api/v1/members")
     public CreateMemberResponse saveMemberV1 (@RequestBody @Valid Member member) {
