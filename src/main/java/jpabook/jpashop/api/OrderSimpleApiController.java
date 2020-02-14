@@ -1,13 +1,18 @@
 package jpabook.jpashop.api;
 
+import jpabook.jpashop.entities.Address;
 import jpabook.jpashop.entities.Order;
+import jpabook.jpashop.entities.OrderStatus;
 import jpabook.jpashop.repositories.OrderRepository;
 import jpabook.jpashop.repositories.OrderSearch;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 컬렉션이 아닌 관계
@@ -48,5 +53,48 @@ public class OrderSimpleApiController {
             order.getDelivery().getAddress(); // Lazy Loading 강제 초기화
         }
         return all;
+    }
+
+
+    /**
+     * DTO로 변환하여 응답
+     *
+     * `문제점`
+     * -> V1과 마찬가지로 Lazy Loading 으로 인한 쿼리가 너무 많이 나간다.
+     *      -> N + 1 문제 발생
+     *      -> fetchType EAGER 로 바꿔도 최적화 되지 않는다.
+     *      -> 오히려 쿼리 예측이 더 힘들어진다.
+     *
+     * @return
+     */
+    @GetMapping("/api/v2/simple-orders")
+    public List<SimpleOrderDto> ordersV2 () {
+        List<Order> orders = orderRepository.findAll(new OrderSearch());
+
+        /* DTO로 변환 */
+        List<SimpleOrderDto> orderDtos = orders.stream()
+                .map(order -> new SimpleOrderDto(order))
+                .collect(Collectors.toList());
+        return orderDtos;
+    }
+
+    /**
+     * API 스펙을 명확하게 정의해야 한다.
+     */
+    @Data
+    static class SimpleOrderDto {
+        private Long orderId;
+        private String name;
+        private LocalDateTime orderDate;
+        private OrderStatus orderStatus;
+        private Address address;
+
+        public SimpleOrderDto(Order order) {
+            this.orderId = order.getId();
+            this.name = order.getMember().getName(); // Lazy 초기화 (쿼리 발생)
+            this.orderDate = order.getOrderDate();
+            this.orderStatus = order.getStatus();
+            this.address = order.getDelivery().getAddress(); // Lazy 초기화 (쿼리 발생)
+        }
     }
 }
