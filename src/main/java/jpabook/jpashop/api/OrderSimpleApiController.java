@@ -78,6 +78,18 @@ public class OrderSimpleApiController {
         return orderDtos;
     }
 
+    @GetMapping("/api/v3/simple-orders")
+    public List<SimpleOrderDto> ordersV3 () {
+        /* fetchJoin 사용 */
+        List<Order> orders = orderRepository.findAllWithMemberDelivery();
+
+        /* DTO로 변환 */
+        List<SimpleOrderDto> orderDtos = orders.stream()
+                .map(order -> new SimpleOrderDto(order))
+                .collect(Collectors.toList());
+        return orderDtos;
+    }
+
     /**
      * API 스펙을 명확하게 정의해야 한다.
      */

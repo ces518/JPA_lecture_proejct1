@@ -7,7 +7,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create # DDL CREATE MODE, 애플리케이션 실행시 지우고 새롭게 생성한다.
+      ddl-auto: none # DDL CREATE MODE, 애플리케이션 실행시 지우고 새롭게 생성한다.
     properties:
       hibernate:
 #        show_sql: true # SQL show (System.out 사용 사용하지 말것)
@@ -17,4 +17,4 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug # Hibernate Logging LEVEL 설정, Hibernate SQL이 모두 보이게 된다. (Logger 사용)
-    org.hiberate.type: trace
+#    org.hiberate.type: trace

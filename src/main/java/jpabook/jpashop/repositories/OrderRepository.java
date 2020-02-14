@@ -79,4 +79,15 @@ public class OrderRepository {
         //== ==//
         return orders;
     }
+
+    /**
+     * 한방 쿼리로 멤버와, 딜리버리를 함께 조회한다.
+     * @return
+     */
+    public List<Order> findAllWithMemberDelivery() {
+        return em.createQuery("select o from Order o " +
+                "join fetch o.member m " +
+                "join fetch o.delivery d", Order.class)
+                .getResultList();
+    }
 }
