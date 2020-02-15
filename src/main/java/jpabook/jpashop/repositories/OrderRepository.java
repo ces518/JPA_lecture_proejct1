@@ -90,4 +90,18 @@ public class OrderRepository {
                 "join fetch o.delivery d", Order.class)
                 .getResultList();
     }
+
+
+    // 엔티티나 값타입만 반환이 가능하다.
+    // DTO로 반환하려면 new Operation을 사용해야한다.
+    // 재사용성이 떨어진다.
+    // DTO로 조회했기때문에 비즈니스 로직 등을 활용할 수 없다.
+    public List<OrderSimpleQueryDto> findOrderDtos() {
+        // JPQL에서 엔티티인 o 를 넘기면 엔티티가 아닌 식별자가 넘어가기때문에 필드를 하나하나 지정해 주어야한다..
+        return em.createQuery(
+                "select new jpabook.jpashop.repositories.OrderSimpleQueryDto(o.id, m.name, o.orderDate, o.status, d.address) from Order o " +
+                        "join o.member m " +
+                        "join o.delivery d", OrderSimpleQueryDto.class)
+                .getResultList();
+    }
 }
