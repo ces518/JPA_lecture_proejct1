@@ -91,6 +91,19 @@ public class OrderRepository {
                 .getResultList();
     }
 
+    /**
+     * 페이징 쿼리
+     * @return
+     */
+    public List<Order> findAllWithMemberDelivery(int offset, int limit) {
+        // ToOne 관계도 In Query로 최적화가 되지만, 네트워크를 더 타기때문에 ToOne관계는 fetch join시 명시 해 두는것이 좋음
+        return em.createQuery("select o from Order o " +
+                "join fetch o.member m " +
+                "join fetch o.delivery d", Order.class)
+                .setFirstResult(offset)
+                .setMaxResults(limit)
+                .getResultList();
+    }
 
     // 엔티티나 값타입만 반환이 가능하다.
     // DTO로 반환하려면 new Operation을 사용해야한다.

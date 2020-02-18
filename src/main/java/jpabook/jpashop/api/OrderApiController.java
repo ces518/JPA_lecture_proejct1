@@ -9,6 +9,7 @@ import jpabook.jpashop.repositories.OrderSearch;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
@@ -55,6 +56,24 @@ public class OrderApiController {
     @GetMapping("/api/v3/orders")
     public List<OrderDto> ordersV3 () {
         List<Order> orders = orderRepository.findAllWithItem(new OrderSearch());
+        List<OrderDto> orderDtos = orders.stream()
+                .map(o -> new OrderDto(o))
+                .collect(Collectors.toList());
+
+        return orderDtos;
+    }
+
+    @GetMapping("/api/v3.1/orders")
+    public List<OrderDto> ordersV3_1 (
+            @RequestParam(value = "offset", defaultValue = "0") int offset,
+            @RequestParam(value = "limit", defaultValue = "100") int limit) {
+        // 아무런 설정을 하지 않은 경우에는 orderItems (컬렉션) 로 인해 n + 1 문제가 발생한다.
+        // default_batch_fetch_size 를 설정하면, 해당 사이즈만큼 lazy loading 시 size 만큼 in Query로 가져온다.
+        // V3방식은 한방쿼리이지만, 뻥튀기된 데이터의 용량이 모두 전송된다.
+        // V3.1방식은 쿼리가 여러번 나가지만 정확하게 필요한 만큼의 데이터만 조회해 온다.
+        // 두 방식은 상황에 따라 데이터의 양이 늘어날수록 전송하는 데이터의 양과, 쿼리횟수 사이에서 트레이드 오프를 해야한다.
+        // -> 데이터 양이 많다면 V3.1방식이 성능이 더 잘 나올수 있다.
+        List<Order> orders = orderRepository.findAllWithMemberDelivery(offset, limit);
         List<OrderDto> orderDtos = orders.stream()
                 .map(o -> new OrderDto(o))
                 .collect(Collectors.toList());

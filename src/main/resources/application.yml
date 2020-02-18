@@ -12,7 +12,7 @@ spring:
       hibernate:
 #        show_sql: true # SQL show (System.out 사용 사용하지 말것)
         format_sql: true # SQL formatting
-    database-platform: org.hibernate.dialect.H2Dialect
+        default_batch_fetch_size: 100
 
 logging:
   level:
