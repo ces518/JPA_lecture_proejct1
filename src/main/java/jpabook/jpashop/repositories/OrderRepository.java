@@ -104,4 +104,20 @@ public class OrderRepository {
                         "join o.delivery d", OrderSimpleQueryDto.class)
                 .getResultList();
     }
+
+    /*
+        Order와 OrderItem join시 중복된 데이터가 발생한다.
+        JPA에서 Order 데이터가 뻥튀기 되어 버린다.
+        > fetch join 은 DB 입장에서 select절에 데이터를 추가해주냐 마냐 차이일뿐 결국 join sql을 사용한다.
+    * */
+    public List<Order> findAllWithItem(OrderSearch orderSearch) {
+        // distinct 키워드를 사용하면 DB distinct + JPA 에서 중복 엔티티를 제거한다.
+        return em.createQuery(
+                "select distinct o from Order o " +
+                        "join fetch o.member m " +
+                        "join fetch o.delivery d " +
+                        "join fetch o.orderItems oi " +
+                        "join fetch o.item i", Order.class)
+                .getResultList();
+    }
 }
