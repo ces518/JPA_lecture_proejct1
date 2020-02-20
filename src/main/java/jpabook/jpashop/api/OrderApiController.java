@@ -6,6 +6,8 @@ import jpabook.jpashop.entities.OrderItem;
 import jpabook.jpashop.entities.OrderStatus;
 import jpabook.jpashop.repositories.OrderRepository;
 import jpabook.jpashop.repositories.OrderSearch;
+import jpabook.jpashop.repositories.order.query.OrderFlatDto;
+import jpabook.jpashop.repositories.order.query.OrderItemQueryDto;
 import jpabook.jpashop.repositories.order.query.OrderQueryDto;
 import jpabook.jpashop.repositories.order.query.OrderQueryRepository;
 import lombok.Data;
@@ -17,6 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static java.util.stream.Collectors.*;
 
 /**
  * Created by IntelliJ IDEA.
@@ -51,7 +55,7 @@ public class OrderApiController {
         List<Order> orders = orderRepository.findAll(new OrderSearch());
         List<OrderDto> orderDtos = orders.stream()
                 .map(o -> new OrderDto(o))
-                .collect(Collectors.toList());
+                .collect(toList());
 
         return orderDtos;
     }
@@ -61,7 +65,7 @@ public class OrderApiController {
         List<Order> orders = orderRepository.findAllWithItem(new OrderSearch());
         List<OrderDto> orderDtos = orders.stream()
                 .map(o -> new OrderDto(o))
-                .collect(Collectors.toList());
+                .collect(toList());
 
         return orderDtos;
     }
@@ -79,7 +83,7 @@ public class OrderApiController {
         List<Order> orders = orderRepository.findAllWithMemberDelivery(offset, limit);
         List<OrderDto> orderDtos = orders.stream()
                 .map(o -> new OrderDto(o))
-                .collect(Collectors.toList());
+                .collect(toList());
 
         return orderDtos;
     }
@@ -92,6 +96,25 @@ public class OrderApiController {
     @GetMapping("/api/v5/orders")
     public List<OrderQueryDto> ordersV5 () {
         return orderQueryRepository.findAllByDto_optimization();
+    }
+
+    @GetMapping("/api/v6/orders")
+    public List<OrderQueryDto> ordersV6 () {
+        List<OrderFlatDto> flats = orderQueryRepository.findAllByDto_flat();
+
+        return flats.stream()
+                // Order에 해당하는 데이터를 OrderQueryDto로 객체로 변환하여 Key로 사용,
+                // OrderItems에 해당하는 데이터를 OrderItemQueryDto로 변환하여 List형태로 value값으로 매핑한다.
+                // OrderId가 같다면 같은 키로 간주
+                .collect(groupingBy(o -> new OrderQueryDto(o.getOrderId(),o.getName(), o.getOrderDate(), o.getOrderStatus(), o.getAddress()),
+                        mapping(o -> new OrderItemQueryDto(o.getOrderId(),o.getItemName(), o.getOrderPrice(), o.getCount()), toList())
+                )).entrySet().stream()
+                // e.getKey() 는 OrderQueryDto이다.
+                // 최종적으로 OrderQueryDto [OrderItemsDto] 형태로 반환됨
+                .map(e -> new OrderQueryDto(e.getKey().getOrderId(),
+                        e.getKey().getName(), e.getKey().getOrderDate(), e.getKey().getOrderStatus(),
+                        e.getKey().getAddress(), e.getValue()))
+                .collect(toList());
     }
 
     @Data
@@ -112,7 +135,7 @@ public class OrderApiController {
             this.address = o.getDelivery().getAddress();
             this.orderItems = o.getOrderItems().stream()
                                                 .map(orderItem -> new OrderItemDto(orderItem))
-                                                .collect(Collectors.toList());
+                                                .collect(toList());
         }
     }
 

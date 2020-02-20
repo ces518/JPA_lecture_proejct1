@@ -11,33 +11,28 @@ import java.util.List;
  * Created by IntelliJ IDEA.
  * User: june
  * Date: 2020-02-20
- * Time: 20:01
+ * Time: 20:48
  **/
 @Data
-public class OrderQueryDto {
+public class OrderFlatDto {
 
     private Long orderId;
     private String name;
     private LocalDateTime orderDate;
     private OrderStatus orderStatus;
     private Address address;
-    private List<OrderItemQueryDto> orderItems;
+    private String itemName;
+    private int orderPrice;
+    private int count;
 
-    public OrderQueryDto(Long orderId, String name, LocalDateTime orderDate, OrderStatus orderStatus, Address address) {
+    public OrderFlatDto(Long orderId, String name, LocalDateTime orderDate, OrderStatus orderStatus, Address address, String itemName, int orderPrice, int count) {
         this.orderId = orderId;
         this.name = name;
         this.orderDate = orderDate;
         this.orderStatus = orderStatus;
         this.address = address;
-//        this.orderItems = orderItems;
-    }
-
-    public OrderQueryDto(Long orderId, String name, LocalDateTime orderDate, OrderStatus orderStatus, Address address, List<OrderItemQueryDto> orderItems) {
-        this.orderId = orderId;
-        this.name = name;
-        this.orderDate = orderDate;
-        this.orderStatus = orderStatus;
-        this.address = address;
-        this.orderItems = orderItems;
+        this.itemName = itemName;
+        this.orderPrice = orderPrice;
+        this.count = count;
     }
 }
