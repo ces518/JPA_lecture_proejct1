@@ -5,6 +5,8 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by IntelliJ IDEA.
@@ -39,6 +41,46 @@ public class OrderQueryRepository {
     }
 
     /**
+     * 최적화 버전
+     * - > 쿼리 두번으로 최적화 된다.
+     * @return
+     */
+    public List<OrderQueryDto> findAllByDto_optimization() {
+        List<OrderQueryDto> result = findOrders();
+
+        // orderId 목록으로 추출
+        List<Long> orderIds = toOrderIds(result);
+
+        Map<Long, List<OrderItemQueryDto>> orderItemMap = findOrderItemMap(orderIds);
+
+        // orderItems 세팅
+        result.forEach(o -> o.setOrderItems(orderItemMap.get(o.getOrderId())));
+        return result;
+    }
+
+    private Map<Long, List<OrderItemQueryDto>> findOrderItemMap(List<Long> orderIds) {
+        // inQuery로 OrderItem 목록 조회
+        List<OrderItemQueryDto> orderItems = em.createQuery(
+                "select new jpabook.jpashop.repositories.order.query.OrderItemQueryDto(oi.order.id, i.name, oi.orderPrice, oi.count) " +
+                        "from OrderItem oi " +
+                        "join oi.item i " +
+                        "where oi.order.id in :orderIds", OrderItemQueryDto.class)
+                .setParameter("orderIds", orderIds)
+                .getResultList();
+
+
+        // OrderId 를 기반으로 Map으로 변환
+        return orderItems.stream()
+                .collect(Collectors.groupingBy(OrderItemQueryDto::getOrderId));
+    }
+
+    private List<Long> toOrderIds(List<OrderQueryDto> result) {
+        return result.stream()
+                        .map(o -> o.getOrderId())
+                        .collect(Collectors.toList());
+    }
+
+    /**
      * OrderDto로 조회
      * @return
      */
@@ -65,4 +107,6 @@ public class OrderQueryRepository {
                 .setParameter("orderId", orderId)
                 .getResultList();
     }
+
+
 }
